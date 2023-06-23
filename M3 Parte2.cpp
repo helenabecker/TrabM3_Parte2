@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-//#include <cstdio> 
+#include <cctype> //para usar toupper
 #include <locale> 
 
 // Alunas: Flávia Schnaider e Helena Becker Piazera
@@ -235,7 +235,7 @@ bool eh_possivel_vertical(char matriz[][tam_matriz], int linha, int coluna, int 
         return false;
     else if (qtd_letras > (tam_maximo - 1 - linha) && inversao == 1)
         return false;
-    else if (qtd_letras < (linha - 1) && inversao == 2)
+    else if (qtd_letras > (linha - 1) && inversao == 2)
         return false;
 
     //verfificador para ver se a apalvra não ocupará uma posição onde já existe outra letra
@@ -264,7 +264,7 @@ bool eh_possivel_horizontal(char matriz[][tam_matriz], int linha, int coluna, in
         return false;
     else if (qtd_letras > (tam_maximo - 1 - coluna) && inversao == 1)
         return false;
-    else if (qtd_letras < (coluna - 1) && inversao == 2)
+    else if (qtd_letras > (coluna - 1) && inversao == 2)
         return false;
 
     //verfificador para ver se a apalvra não ocupará uma posição onde já existe outra letra
@@ -318,8 +318,11 @@ void palavra_horizontal_na_matriz(char matriz[][tam_matriz], string palavra, int
 void preencher_matriz_com_lista(char matriz[][tam_matriz], string palavra) {
     int linha = 0, coluna = 0, qtd_letras = 0, direcao = 0, inversao = 0;
     bool valido = false, pos_valida = false;
-
+    
+    string convertida;
     for (char c : palavra) {
+        c = toupper(c); //converte a palavra para letras maiusculas
+        convertida += c;
         qtd_letras++;
     }
 
@@ -343,9 +346,9 @@ void preencher_matriz_com_lista(char matriz[][tam_matriz], string palavra) {
 
     if (pos_valida) {
         if (direcao == 1)
-            palavra_vertical_na_matriz (matriz, palavra, inversao, linha, coluna);
+            palavra_vertical_na_matriz (matriz, convertida, inversao, linha, coluna);
         if (direcao == 2)
-            palavra_horizontal_na_matriz(matriz, palavra, inversao, linha, coluna);
+            palavra_horizontal_na_matriz(matriz, convertida, inversao, linha, coluna);
     }
 }
 
@@ -370,7 +373,6 @@ int main()
     Lista* listas = new Lista[tam];
     
     char matriz[tam_matriz][tam_matriz];
-    matriz_vazia(matriz); //inicializa a matriz sem nada
 
     int cont_linhas = contar_linhas_arquivo(); //contando linhas do arquivo csv
 
@@ -447,6 +449,7 @@ int main()
 
         case 5: // JOGAR
             system("cls");
+            matriz_vazia(matriz); //limpa a matriz
             if (cont_linhas == 0) {
                 cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
                 system("pause");
@@ -454,9 +457,6 @@ int main()
                 break;
             }
             pos_sorteada = sortear_lista(cont_linhas);
-            //cout << lista_sorteada;
-            
-            mostrar_matriz(matriz);
 
             for (int i = 0; i < listas[pos_sorteada].tam; i++) {
                 palavra = listas[pos_sorteada].palavras[i];
