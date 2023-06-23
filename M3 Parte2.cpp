@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdio> 
+//#include <cstdio> 
 #include <locale> 
 
 // Alunas: Flávia Schnaider e Helena Becker Piazera
@@ -76,12 +76,14 @@ int contar_linhas_arquivo() {
 
     if (arquivo.is_open()) {
         while (getline(arquivo, linha)) {
-            contador++;
+            if (linha.empty() == false) {
+                contador++;
+            }
         }
         arquivo.close();
         return contador;
     }
-    else return 0;
+    else return -1;
 }
 
 void escrever_nova_lista(Lista listas[], int tam) {
@@ -186,32 +188,6 @@ void alterar_lista(Lista listas[], int tam) {
     escrever_nova_lista(listas, escolha);
 }
 
-void verifica_temp() {
-    ifstream temp_arquivo("listaPalavras.temp");
-    if (temp_arquivo.good()) {
-        ofstream csv_arquivo("listaPalavras.csv");
-        csv_arquivo << temp_arquivo.rdbuf();
-        csv_arquivo.close();
-        temp_arquivo.close();
-        remove("listaPalavras.temp");
-
-    }
-}
-
-void popular_lista(Lista listas[], int tam) {
-    ifstream arquivo;
-    arquivo.open("listaPalavras.csv");
-    int contador = 0;
-    string linha;
-    contador = contar_linhas_arquivo();
-
-    if (arquivo.is_open()) { // atualiza a lista de palavras
-        while (getline(arquivo, linha)) {
-            listas[tam].palavras[contador++];
-        }
-        arquivo.close();
-    }
-}
 #pragma endregion listas
 
 #pragma region jogo
@@ -222,9 +198,156 @@ int sortear_lista(int tam) {
     return lista_sorteada;
 }
 
-//fazer função de mostrar matriz
+void matriz_vazia(char matriz[][tam_matriz]) {
+    for (int i = 0; i < tam_matriz; i++) {
+        for (int j = 0; j < tam_matriz; j++) {
+            matriz[i][j] = '\0';
+        }
+    }
+}
 
-//fazer função que preenche matriz com as palavras da lista sorteada
+void mostrar_matriz(char matriz[tam_matriz][tam_matriz]) {
+    cout << "\n\t";
+	for (char letra = 'a'; letra <= 't'; letra++) { // Percorre o alfabeto de 'a' a 'z' para representar as colunas
+        if (letra == 'a') 
+            cout << "      " << letra << "   ";
+        else 
+            cout << letra << "   ";
+	}
+    cout << endl;
+	for (int i = 0; i < tam_matriz; i++) {
+        if (i <= 9)
+		    cout << "\n\t " << i << " |";
+        else 
+            cout << "\n\t" << i << " |";
+
+		for (int j = 0; j < tam_matriz; j++) {
+			cout << "  " << matriz[i][j] << " "; //mostra a letra de cada posição da matriz
+		}
+		cout << endl;
+	}
+}
+bool eh_possivel_vertical(char matriz[][tam_matriz], int linha, int coluna, int qtd_letras, int direcao, int inversao) {
+    //verficadores para ver se a palavra caberá na vertical
+    if (linha == 0 && inversao == 2)
+        return false;
+    else if (linha == (tam_maximo - 1) && inversao == 1)
+        return false;
+    else if (qtd_letras > (tam_maximo - 1 - linha) && inversao == 1)
+        return false;
+    else if (qtd_letras < (linha - 1) && inversao == 2)
+        return false;
+
+    //verfificador para ver se a apalvra não ocupará uma posição onde já existe outra letra
+    if (inversao == 1) {
+        for (int i = linha; i < linha + qtd_letras; i++) {
+            if (matriz[i][coluna] != '\0') {
+                return false;
+            }
+        }
+    }
+    if (inversao == 2) {
+        for (int i = linha; i > linha - qtd_letras; i--) {
+            if (matriz[i][coluna] != '\0') {
+                return false;
+            }
+        }
+    }
+    return true; //se for permitido colocar a palavra nas posições e direções sorteadas
+}
+
+bool eh_possivel_horizontal(char matriz[][tam_matriz], int linha, int coluna, int qtd_letras, int direcao, int inversao) {
+    //verficadores para ver se a palavra caberá na horizontal
+    if (coluna == 0 && inversao == 2)
+        return false;
+    else if (coluna == tam_maximo - 1 && inversao == 1)
+        return false;
+    else if (qtd_letras > (tam_maximo - 1 - coluna) && inversao == 1)
+        return false;
+    else if (qtd_letras < (coluna - 1) && inversao == 2)
+        return false;
+
+    //verfificador para ver se a apalvra não ocupará uma posição onde já existe outra letra
+    if (inversao == 1) {
+        for (int i = coluna; i < coluna + qtd_letras; i++) {
+            if (matriz[linha][i] != '\0') {
+                return false;
+            }
+        }
+    }
+    if (inversao == 2) {
+        for (int i = coluna; i < coluna - qtd_letras; i--) {
+            if (matriz[linha][i] != '\0') {
+                return false;
+            }
+        }
+    }
+    return true; //se for permitido colocar a palavra nas posições e direções sorteadas
+}
+
+void palavra_vertical_na_matriz(char matriz[][tam_matriz], string palavra, int inversao, int linha, int coluna) {
+    if (inversao == 1) { //palavra fica normal
+        for (char c : palavra) { //percorre cada caracter da palavra
+            matriz[linha][coluna] += c;
+            linha++;
+        }
+    }
+    else { //palavra fica invertida
+        for (char c : palavra) {
+            matriz[linha][coluna] += c;
+            linha--;
+        }
+    }
+}
+
+void palavra_horizontal_na_matriz(char matriz[][tam_matriz], string palavra, int inversao, int linha, int coluna) {
+    if (inversao == 1) { //palavra fica normal
+        for (char c : palavra) { //percorre cada caracter da palavra
+            matriz[linha][coluna] += c;
+            coluna++;
+        }
+    }
+    else { //palavra fica invertida
+        for (char c : palavra) {
+            matriz[linha][coluna] += c;
+            coluna--;
+        }
+    }
+}
+
+void preencher_matriz_com_lista(char matriz[][tam_matriz], string palavra) {
+    int linha = 0, coluna = 0, qtd_letras = 0, direcao = 0, inversao = 0;
+    bool valido = false, pos_valida = false;
+
+    for (char c : palavra) {
+        qtd_letras++;
+    }
+
+    srand(time(NULL));
+    while (pos_valida == false) {
+        do { //sorteia linha e coluna para a primeira letra da palavra
+            linha = rand() % tam_matriz;
+            coluna = rand() % tam_matriz;
+            if (matriz[linha][coluna] == '\0') valido = true;
+            else valido = false;
+        } while (valido == false); //enquanto não sortear uma posição vazia da matriz
+
+        inversao = 1 + rand() % 2; //1 - normal, 2 - invertido
+        direcao = 1 + rand() % 2; //1 - vertical, 2 - horizontal, 3 - diagonal SEM DIAGONAL POR ENQUANTO
+
+        if (direcao == 1)
+            pos_valida = eh_possivel_vertical(matriz, linha, coluna, qtd_letras, direcao, inversao);
+        if (direcao == 2)
+            pos_valida = eh_possivel_horizontal(matriz, linha, coluna, qtd_letras, direcao, inversao);
+    }
+
+    if (pos_valida) {
+        if (direcao == 1)
+            palavra_vertical_na_matriz (matriz, palavra, inversao, linha, coluna);
+        if (direcao == 2)
+            palavra_horizontal_na_matriz(matriz, palavra, inversao, linha, coluna);
+    }
+}
 
 //fazer função que preenche resto da matriz com caracteres aleatorios
 
@@ -242,20 +365,19 @@ void exibirMenu() {
 
 int main()
 {
-    int escolha, tam = 1, lista_sorteada;
+    string palavra;
+    int escolha, tam = 1, pos_sorteada;
     Lista* listas = new Lista[tam];
-    char matriz[tam_matriz][tam_matriz];
-
-    verifica_temp(); //arquivo de backup
-    //Sleep(1000);
-    popular_lista(listas, tam);
     
-    int cont_linhas = contar_linhas_arquivo(); // contando linhas depois de popular
+    char matriz[tam_matriz][tam_matriz];
+    matriz_vazia(matriz); //inicializa a matriz sem nada
 
-    if (cont_linhas > 1) 
+    int cont_linhas = contar_linhas_arquivo(); //contando linhas do arquivo csv
+
+    if (cont_linhas > 1) //se tiver mais que uma linha no arquivo, aumenta o tamamho do vetor de listas
         listas = aumentar_vetor(listas, tam, cont_linhas - 1);
 
-    if (cont_linhas > 0)
+    if (cont_linhas > 0) //se o arquivo não estiver vazio, pega as listas e salva no vetor
         pegar_listas_do_arquivo(listas, tam);
 
     while (true) {
@@ -267,14 +389,13 @@ int main()
         case 0: // SALVAR ARQUIVO E SAIR
             escrever_no_arquivo(listas, "listaPalavras.csv", tam);
             delete[] listas;
-            remove("listaPalavras.temp");
             return 0;
             break;
 
         case 1: // VISUALIZAR LISTA
             system("cls");
             if (cont_linhas == 0) {
-                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista" << endl;
+                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
                 system("pause");
                 system("cls");
                 break;
@@ -296,7 +417,6 @@ int main()
                 break;
             }
             escrever_nova_lista(listas, tam);
-            escrever_no_arquivo(listas, "listaPalavras.temp", tam);
             cont_linhas++;
             system("pause");
             system("cls");
@@ -305,39 +425,46 @@ int main()
         case 3: // DELETAR UMA LISTA
             system("cls");
             if (cont_linhas == 0) {
-                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista" << endl;
+                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
                 system("pause");
                 system("cls");
                 break;
             }
             cont_linhas = cont_linhas - 1;
             deletar_lista(listas, tam);
-            escrever_no_arquivo(listas, "listaPalavras.temp", tam);
             system("cls");
             break;
 
         case 4: //ALTERAR LISTA
             system("cls");
             if (cont_linhas == 0) {
-                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista" << endl;
+                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
                 break;
             }
             alterar_lista(listas, tam);
-            escrever_no_arquivo(listas, "listaPalavras.temp", tam);
             system("cls");
             break;
 
         case 5: // JOGAR
             system("cls");
             if (cont_linhas == 0) {
-                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista" << endl;
+                cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
                 system("pause");
                 system("cls");
                 break;
             }
-            lista_sorteada = sortear_lista(cont_linhas);
-            cout << lista_sorteada;
+            pos_sorteada = sortear_lista(cont_linhas);
+            //cout << lista_sorteada;
             
+            mostrar_matriz(matriz);
+
+            for (int i = 0; i < listas[pos_sorteada].tam; i++) {
+                palavra = listas[pos_sorteada].palavras[i];
+                preencher_matriz_com_lista(matriz, palavra);
+            }
+            cout << "\n\n";
+            mostrar_matriz(matriz);
+
             system("pause");
             system("cls");
             break;
