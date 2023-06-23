@@ -222,11 +222,15 @@ void mostrar_matriz(char matriz[tam_matriz][tam_matriz]) {
             cout << "\n\t" << i << " |";
 
 		for (int j = 0; j < tam_matriz; j++) {
-			cout << "  " << matriz[i][j] << " "; //mostra a letra de cada posição da matriz
+            if (matriz[i][j] != '\0')
+			    cout << "  " << matriz[i][j] << " "; //mostra a letra de cada posição da matriz
+            else
+                cout << "    ";
 		}
 		cout << endl;
 	}
 }
+
 bool eh_possivel_vertical(char matriz[][tam_matriz], int linha, int coluna, int qtd_letras, int direcao, int inversao) {
     //verficadores para ver se a palavra caberá na vertical
     if (linha == 0 && inversao == 2)
@@ -238,7 +242,7 @@ bool eh_possivel_vertical(char matriz[][tam_matriz], int linha, int coluna, int 
     else if (qtd_letras > (linha - 1) && inversao == 2)
         return false;
 
-    //verfificador para ver se a apalvra não ocupará uma posição onde já existe outra letra
+    //verfificador para ver se a palavra não ocupará uma posição onde já existe outra letra
     if (inversao == 1) {
         for (int i = linha; i < linha + qtd_letras; i++) {
             if (matriz[i][coluna] != '\0') {
@@ -267,7 +271,7 @@ bool eh_possivel_horizontal(char matriz[][tam_matriz], int linha, int coluna, in
     else if (qtd_letras > (coluna - 1) && inversao == 2)
         return false;
 
-    //verfificador para ver se a apalvra não ocupará uma posição onde já existe outra letra
+    //verfificador para ver se a palavra não ocupará uma posição onde já existe outra letra
     if (inversao == 1) {
         for (int i = coluna; i < coluna + qtd_letras; i++) {
             if (matriz[linha][i] != '\0') {
@@ -276,7 +280,7 @@ bool eh_possivel_horizontal(char matriz[][tam_matriz], int linha, int coluna, in
         }
     }
     if (inversao == 2) {
-        for (int i = coluna; i < coluna - qtd_letras; i--) {
+        for (int i = coluna; i > coluna - qtd_letras; i--) {
             if (matriz[linha][i] != '\0') {
                 return false;
             }
@@ -352,7 +356,17 @@ void preencher_matriz_com_lista(char matriz[][tam_matriz], string palavra) {
     }
 }
 
-//fazer função que preenche resto da matriz com caracteres aleatorios
+void preencher_matriz_com_caracteres(char matriz[][tam_matriz]) {
+    srand(time(NULL));
+    
+    for (int i = 0; i < tam_matriz; i++) {
+        for (int j = 0; j < tam_matriz; j++) {
+            char letra = 'A' + (rand() % 26); //gera um número de 0 a 25, somado com o valor ASCII de 'A' (65) para ter letras maiusculas aleatorias
+            if (matriz[i][j] == '\0')
+                matriz[i][j] = letra;
+        }
+    }
+}
 
 #pragma endregion jogo
 
@@ -460,10 +474,14 @@ int main()
 
             for (int i = 0; i < listas[pos_sorteada].tam; i++) {
                 palavra = listas[pos_sorteada].palavras[i];
-                preencher_matriz_com_lista(matriz, palavra);
+                preencher_matriz_com_lista(matriz, palavra); //coloca uma palavra de cada vez na matriz
             }
             cout << "\n\n";
-            mostrar_matriz(matriz);
+            mostrar_matriz(matriz); //mostra matriz só com as palavras 
+
+            preencher_matriz_com_caracteres(matriz);
+            cout << "\n\n";
+            mostrar_matriz(matriz); //mostra matriz completamente preenchida (palavras + caracteres aleatorios)
 
             system("pause");
             system("cls");
