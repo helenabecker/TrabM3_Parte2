@@ -215,14 +215,16 @@ void matriz_vazia(char matriz[][tam_matriz]) {
 
 void mostrar_matriz(char matriz[tam_matriz][tam_matriz], Lista listas[], int lista_sorteada) {
     cout << "\n\t";
-	for (char letra = 'a'; letra <= 't'; letra++) { // Percorre o alfabeto de 'a' a 'z' para representar as colunas
-        if (letra == 'a') 
-            cout << "" << letra << "   ";
-        else 
-            cout << letra << "   ";
+	for (int i = 0; i < tam_matriz; i++) { // representa as colunas
+        if (i == 0) 
+            cout << "" << i << "   ";
+        else if (i > 0 && i < 10)
+            cout << i << "   ";
+        else if (i >= 10)
+            cout << i << "  ";
 	}
     cout << endl;
-	for (int i = 0; i < tam_matriz; i++) {
+	for (int i = 0; i < tam_matriz; i++) { //representa o inicio de cada linha
         if (i <= 9)
 		    cout << "\n   " << i << " |";
         else 
