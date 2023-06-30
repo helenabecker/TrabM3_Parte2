@@ -611,7 +611,7 @@ int main()
             system("cls");
             encontradas = 0; //reinicia palavras encontradas como zero
             
-            Matriz matriz[tam_matriz][tam_matriz];
+            Matriz matriz[tam_matriz][tam_matriz]; //criado dentro do case para reiniciar todas as variáveis do struct a cada novo jogo
             matriz_vazia(matriz); //limpa a matriz
             
             if (cont_linhas == 0) {
@@ -667,7 +667,7 @@ int main()
                     cout << "\n\tPalavra Invalida\n\n";
                     set_color(7);
                 }
-                if (palavra_valida) {
+                else if (palavra_valida) {
                     set_color(2);
                     cout << "\n\tPalavra Valida\n\n";
                     set_color(7);
@@ -678,10 +678,10 @@ int main()
                             break;
                         }
                     }
-                    encontradas++; //aumenta quantidade de palavras encontradas 
-                    
+                    encontradas++; //aumenta quantidade de palavras encontradas  
                     atualizar_matriz(matriz, linha, coluna, direcao, qtd_letras, inversao); //define as posições da matriz correspondentes a palavra como encontradas = true;
                 }
+                
                 if (encontradas == listas[pos_sorteada].tam) { //se a qtd de palavras encontradas for igual a qtd de palavras da lista, houve vitoria
                     set_color(10);
                     cout << "\n\tParabens! Voce conseguiu encontrar todas as palavras\n\n";
