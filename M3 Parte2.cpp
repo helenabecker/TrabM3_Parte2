@@ -3,36 +3,22 @@
 #include <string>
 #include <cctype> //para usar toupper
 #include <locale> 
-#include <Windows.h>
+#include <Windows.h> // para funcao de cor
 
 // Alunas: Flávia Schnaider e Helena Becker Piazera
 
 using namespace std;
 #define tam_maximo 10
 #define tam_matriz 20
-/*
-PARTE II
-    - Seu programa deverá ler as listas de palavras e armazená-las em memória principal (usando structs)
-    - O programa irá sortear uma das listas armazenadas e elaborar com ela um jogo de caça-palavras
-    - Para isso, criar uma matriz de caracteres, com dimensões mínimas de 20x20,
-    - As palavras da lista devem ser colocadas na vertical e horizontal, no sentido normal ou invertido (diagonal é opcional)
-    - Após isso, ele irá preencher o restante da matriz com caracteres aleatórios.
-    - O usuário deve buscar as palavras da lista.
-    - O programa irá apresentar a matriz e a lista de palavras escondidas, e permitir localizar cada uma delas
-    - Quando achar uma palavra, ela deve ser escondida na matriz (que será apresentada novamente), até que todas as palavras sejam encontradas
-    - Para a busca das palavras, você deve simplificar o processo. Solicite, por exemplo, ao usuário qual é a palavra 
-    e a posição da primeira letra. Depois você verifica todas as possibilidades (vertical, horizonta, normal, invertida) 
-    a partir daquela posição. Achando em uma delas, você deve excluir a palavra localizada da busca. 
-*/
 
-struct ListaSorteada {
+struct ListaSorteada { //lista de palavras que aparece durante o jogo
     string palavra;
-    bool esconder = false; 
+    bool esconder = false; //quando a palavra for encontrada, não aparecerá mais na tela
 };
 
 struct Lista {
     string palavras[tam_maximo];
-    int tam = 0;
+    int tam = 0; //posições sendo utilizadas no vetor
     bool deletar = false;
 };
 
@@ -62,7 +48,9 @@ int opcao_invalida(string frase, int min, int max, bool mostrar_min_max) {
         }
 
         if (op < min || op > max) {
+            set_color(4);
             cout << "\nOpcao invalida. Tente novamente.\n" << endl;
+            set_color(7);
         }
         if (cin.fail()) {
             cin.clear();
@@ -230,36 +218,50 @@ void matriz_vazia(Matriz matriz[][tam_matriz]) {
     }
 }
 
-void mostrar_matriz(Matriz matriz[tam_matriz][tam_matriz], Lista listas[], int lista_sorteada) {
+void mostrar_matriz(Matriz matriz[tam_matriz][tam_matriz], ListaSorteada lista_auxiliar[], int tam_lista, int palavras_encontradas) {
     cout << "\n\t";
-	for (int i = 0; i < tam_matriz; i++) { // representa as colunas
+    for (int i = 0; i < tam_matriz; i++) { // representa as colunas
         if (i < 10)
             cout << i << "   ";
         else if (i >= 10)
             cout << i << "  ";
-	}
+    }
     cout << endl;
-	for (int i = 0; i < tam_matriz; i++) { //representa o inicio de cada linha
+    for (int i = 0; i < tam_matriz; i++) { //representa o inicio de cada linha
         if (i <= 9)
-		    cout << "\n   " << i << " |";
-        else 
+            cout << "\n   " << i << " |";
+        else
             cout << "\n  " << i << " |";
 
-		for (int j = 0; j < tam_matriz; j++) {
-            if (matriz[i][j].letra != '\0')
-                if (matriz[i][j].encontrada == true) {//se a letra pertence a uma palavra encontrada
-                    set_color(6);
-                    cout << "  " << matriz[i][j].letra << " "; //mostra a letra de cada posição da matriz
+        for (int j = 0; j < tam_matriz; j++) {
+            if (matriz[i][j].letra != '\0') {
+                if (matriz[i][j].encontrada == true) {
+                    set_color(13);
+                    cout << "  " << matriz[i][j].letra << " ";
                     set_color(7);
                 }
-                else cout << "  " << matriz[i][j].letra << " ";
-		}
-        if (i == 0)
+                else
+                    cout << "  " << matriz[i][j].letra << " ";
+            }
+        }
+        if (i == 0) {
+            set_color(11);
             cout << "\t   Encontre as palavras:";
-        else if (i > 0 && i <= listas[lista_sorteada].tam)
-            cout << "\t   " << listas[lista_sorteada].palavras[i - 1]; //mostra ao lado do caça palavras a lista de palavras da lista sorteada
-		cout << endl;
-	}
+            set_color(7);
+        }
+        else if (i > 0 && i <= tam_lista) {
+            if (lista_auxiliar[i - 1].esconder) {
+                set_color(13);
+                cout << "\t   " << lista_auxiliar[i - 1].palavra; //mostra ao lado do caça palavras a lista de palavras da lista sorteada
+                set_color(7);
+            }
+            else 
+                cout << "\t   " << lista_auxiliar[i - 1].palavra;
+        }
+        else if (i == tam_lista + 2)
+            cout << "\t   Palavras encontradas: " << palavras_encontradas;
+        cout << endl;
+    }
 }
 
 bool eh_possivel_vertical(Matriz matriz[][tam_matriz], int linha, int coluna, int qtd_letras, int direcao, int inversao) {
@@ -276,16 +278,14 @@ bool eh_possivel_vertical(Matriz matriz[][tam_matriz], int linha, int coluna, in
     //verfificador para ver se a palavra não ocupará uma posição onde já existe outra letra
     if (inversao == 1) {
         for (int i = linha; i < linha + qtd_letras; i++) {
-            if (matriz[i][coluna].letra != '\0') {
+            if (matriz[i][coluna].letra != '\0')
                 return false;
-            }
         }
     }
     if (inversao == 2) {
         for (int i = linha; i > linha - qtd_letras; i--) {
-            if (matriz[i][coluna].letra != '\0') {
+            if (matriz[i][coluna].letra != '\0')
                 return false;
-            }
         }
     }
     return true; //se for permitido colocar a palavra nas posições e direções sorteadas
@@ -305,16 +305,14 @@ bool eh_possivel_horizontal(Matriz matriz[][tam_matriz], int linha, int coluna, 
     //verfificador para ver se a palavra não ocupará uma posição onde já existe outra letra
     if (inversao == 1) {
         for (int i = coluna; i < coluna + qtd_letras; i++) {
-            if (matriz[linha][i].letra != '\0') {
+            if (matriz[linha][i].letra != '\0')
                 return false;
-            }
         }
     }
     if (inversao == 2) {
         for (int i = coluna; i > coluna - qtd_letras; i--) {
-            if (matriz[linha][i].letra != '\0') {
+            if (matriz[linha][i].letra != '\0')
                 return false;
-            }
         }
     }
     return true; //se for permitido colocar a palavra nas posições e direções sorteadas
@@ -350,7 +348,7 @@ void palavra_horizontal_na_matriz(Matriz matriz[][tam_matriz], string palavra, i
     }
 }
 
-string converter_letra_maiuscula(string palavra, int &qtd_letras) {
+string converter_letra_maiuscula(string palavra, int& qtd_letras) {
     string convertida;
     for (char c : palavra) {
         c = toupper(c); //converte a palavra para letras maiusculas
@@ -363,7 +361,7 @@ string converter_letra_maiuscula(string palavra, int &qtd_letras) {
 void preencher_matriz_com_lista(Matriz matriz[][tam_matriz], string palavra) {
     int linha = 0, coluna = 0, qtd_letras = 0, direcao = 0, inversao = 0;
     bool valido = false, pos_valida = false;
-    
+
     palavra = converter_letra_maiuscula(palavra, qtd_letras);
 
     srand(time(NULL));
@@ -386,7 +384,7 @@ void preencher_matriz_com_lista(Matriz matriz[][tam_matriz], string palavra) {
 
     if (pos_valida) {
         if (direcao == 1)
-            palavra_vertical_na_matriz (matriz, palavra, inversao, linha, coluna);
+            palavra_vertical_na_matriz(matriz, palavra, inversao, linha, coluna);
         if (direcao == 2)
             palavra_horizontal_na_matriz(matriz, palavra, inversao, linha, coluna);
     }
@@ -394,7 +392,7 @@ void preencher_matriz_com_lista(Matriz matriz[][tam_matriz], string palavra) {
 
 void preencher_matriz_com_caracteres(Matriz matriz[][tam_matriz]) {
     srand(time(NULL));
-    
+
     for (int i = 0; i < tam_matriz; i++) {
         for (int j = 0; j < tam_matriz; j++) {
             char letra = 'A' + (rand() % 26); //gera um número de 0 a 25, somado com o valor ASCII de 'A' (65) para ter letras maiusculas aleatorias
@@ -408,7 +406,7 @@ void preencher_matriz_com_caracteres(Matriz matriz[][tam_matriz]) {
 
 #pragma region verificar jogada
 
-bool verificar_vertical_normal(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int &inversao) {
+bool verificar_vertical_normal(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int& inversao) {
     int letras_compativeis = 0;
     for (char c : palavra) {
         if (c == matriz[linha][coluna].letra && matriz[linha][coluna].encontrada == false) // só valida palavra q ainda não foi encontrada
@@ -422,7 +420,7 @@ bool verificar_vertical_normal(Matriz matriz[][tam_matriz], string palavra, int 
     else return false;
 }
 
-bool verificar_vertical_inversa(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int &inversao) {
+bool verificar_vertical_inversa(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int& inversao) {
     int letras_compativeis = 0;
     for (char c : palavra) {
         if (c == matriz[linha][coluna].letra && matriz[linha][coluna].encontrada == false) // só valida palavra q ainda não foi encontrada
@@ -436,12 +434,12 @@ bool verificar_vertical_inversa(Matriz matriz[][tam_matriz], string palavra, int
     else return false;
 }
 
-bool verificar_horizontal_normal(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int &inversao) {
+bool verificar_horizontal_normal(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int& inversao) {
     int letras_compativeis = 0;
     for (char c : palavra) {
         if (c == matriz[linha][coluna].letra && matriz[linha][coluna].encontrada == false) // só valida palavra q ainda não foi encontrada
-            letras_compativeis++;   
-       coluna++;
+            letras_compativeis++;
+        coluna++;
     }
     if (letras_compativeis == qtd_letras) {
         inversao = 1; //salva o valor da inversao por referencia
@@ -450,7 +448,7 @@ bool verificar_horizontal_normal(Matriz matriz[][tam_matriz], string palavra, in
     else return false;
 }
 
-bool verificar_horizontal_inversa(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int &inversao) {
+bool verificar_horizontal_inversa(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int qtd_letras, int& inversao) {
     int letras_compativeis = 0;
     for (char c : palavra) {
         if (c == matriz[linha][coluna].letra && matriz[linha][coluna].encontrada == false) //só valida palavra q ainda não foi encontrada
@@ -464,12 +462,11 @@ bool verificar_horizontal_inversa(Matriz matriz[][tam_matriz], string palavra, i
     else return false;
 }
 
-bool encontrou_palavra(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int direcao, int &qtd_letras, int &inversao) {
+bool encontrou_palavra(Matriz matriz[][tam_matriz], string palavra, int linha, int coluna, int direcao, int& qtd_letras, int& inversao) {
     int letras_compativeis = 0;
-    
+
     palavra = converter_letra_maiuscula(palavra, qtd_letras); //coloca a palavra encontrada em letras maiusculas para poder fazer a comparação
-    cout << "\nqtd_letras: " << qtd_letras;
-    
+
     if (direcao == 1) { //verificar palavra na vertical
         if (verificar_vertical_normal(matriz, palavra, linha, coluna, qtd_letras, inversao))
             return true;
@@ -491,42 +488,43 @@ bool encontrou_palavra(Matriz matriz[][tam_matriz], string palavra, int linha, i
 void atualizar_matriz(Matriz matriz[][tam_matriz], int linha, int coluna, int direcao, int qtd_letras, int inversao) {
     if (direcao == 1) { //vertical
         if (inversao == 1) { //sentido normal 
-            for (int i = linha; i < linha + qtd_letras; i++) {
+            for (int i = linha; i < linha + qtd_letras; i++)
                 matriz[i][coluna].encontrada = true;
-            }
         }
         if (inversao == 2) { //sentido inverso 
-            for (int i = linha; i > linha - qtd_letras; i--) {
+            for (int i = linha; i > linha - qtd_letras; i--)
                 matriz[i][coluna].encontrada = true;
-            }
         }
     }
     if (direcao == 2) { //horizontal
         if (inversao == 1) { //sentido normal 
-            for (int i = coluna; i < coluna + qtd_letras; i++) {
+            for (int i = coluna; i < coluna + qtd_letras; i++)
                 matriz[linha][i].encontrada = true;
-            }
         }
         if (inversao == 2) { //sentido inverso 
-            for (int i = coluna; i > coluna - qtd_letras; i--) {
+            for (int i = coluna; i > coluna - qtd_letras; i--)
                 matriz[linha][i].encontrada = true;
-            }
         }
     }
 }
 
 #pragma endregion verificar jogada
 
-void exibirMenu() {
-    set_color(6);
-    cout << "\n - - - - - MENU - - - - -\n" << endl;
+int exibirMenu() {
+    set_color(11);
+    cout << "\n-----------------------------------------------------------\n";
+    cout << "                          MENU                                 ";
+    cout << "\n-----------------------------------------------------------\n" << endl;
     set_color(7);
-    cout << " [1] - Visualizar Lista Completa\n"
-        << " [2] - Escrever nova lista\n"
-        << " [3] - Deletar uma lista\n"
-        << " [4] - Alterar uma Lista\n"
-        << " [5] - Jogar\n"
-        << " [0] - Salvar e Sair\n";
+    cout << "          [1] - Visualizar Lista Completa               \n"
+        << "          [2] - Escrever nova lista                     \n"
+        << "          [3] - Deletar uma lista                       \n"
+        << "          [4] - Alterar uma Lista                       \n"
+        << "          [5] - Jogar                                   \n"
+        << "          [0] - Salvar e Sair                           \n"
+        << "                                                        \n";
+    int escolha = opcao_invalida("\t  Digite uma opcao do menu ", 0, 5, true);
+    return escolha;
 }
 
 int main()
@@ -535,8 +533,6 @@ int main()
     int escolha, tam = 1, pos_sorteada, linha = 0, coluna = 0, direcao = 0, encontradas = 0, inversao = 0, qtd_letras = 0;
     bool palavra_valida = false;
     Lista* listas = new Lista[tam];
-    
-    Matriz matriz[tam_matriz][tam_matriz];
 
     int cont_linhas = contar_linhas_arquivo(); //contando linhas do arquivo csv
 
@@ -547,8 +543,8 @@ int main()
         pegar_listas_do_arquivo(listas, tam);
 
     while (true) {
-        exibirMenu();
-        escolha = opcao_invalida("\nDigite sua escolha", 0, 5, true);
+        system("cls");
+        escolha = exibirMenu();
 
         switch (escolha)
         {
@@ -613,34 +609,40 @@ int main()
 
         case 5: // JOGAR
             system("cls");
+            encontradas = 0; //reinicia palavras encontradas como zero
+            
+            Matriz matriz[tam_matriz][tam_matriz];
             matriz_vazia(matriz); //limpa a matriz
+            
             if (cont_linhas == 0) {
                 cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
                 system("pause");
-                system("cls");
                 break;
             }
-            pos_sorteada = sortear_lista(cont_linhas);
-            ListaSorteada* lista_sorteada = new ListaSorteada[listas[pos_sorteada].tam];
+            pos_sorteada = sortear_lista(cont_linhas); //sorteia uma das listas de palavras para o jogo
+            
+            ListaSorteada* lista_auxiliar = new ListaSorteada[listas[pos_sorteada].tam]; //lista auxiliar para manter o controle da lista de palavras que aparece na tela
+            for (int i = 0; i < listas[pos_sorteada].tam; i++) {
+                lista_auxiliar[i].palavra = listas[pos_sorteada].palavras[i]; //copia as palavras da lista original poara a lista auxiliar
+            }
 
             for (int i = 0; i < listas[pos_sorteada].tam; i++) {
                 palavra = listas[pos_sorteada].palavras[i];
                 preencher_matriz_com_lista(matriz, palavra); //coloca uma palavra de cada vez na matriz
             }
-
             preencher_matriz_com_caracteres(matriz);
+
             do {
                 system("cls");
                 qtd_letras = 0, inversao = 0;
                 cout << "\n";
-                mostrar_matriz(matriz, listas, pos_sorteada); //mostra matriz completamente preenchida (palavras + caracteres aleatorios)
+                mostrar_matriz(matriz, lista_auxiliar, listas[pos_sorteada].tam, encontradas); //mostra matriz completamente preenchida (palavras + caracteres aleatorios)
 
                 cout << "\n\tPalavra encontrada ('fim' para voltar ao menu): ";
                 cin >> palavra;
 
-                if (palavra == "fim") { //volta ao menu no meio do jogo
+                if (palavra == "fim")  //volta ao menu no meio do jogo
                     break;
-                }
 
                 palavra_valida = false;
                 for (int i = 0; i < listas[pos_sorteada].tam; i++) {
@@ -654,31 +656,36 @@ int main()
                 cout << "\n\t\tColuna da primeira letra: ";
                 cin >> coluna;
 
-                direcao = opcao_invalida("\n\t\tPalavra esta na vertical (1), horizontal (2) ou diagonal (3)", 1, 3, false);
+                direcao = opcao_invalida("\n\t\tPalavra esta na vertical (1) ou horizontal (2)", 1, 2, false);
 
                 //verifica se a palavra encontrada esta dentro das posições indicadas na matriz
                 palavra_valida = false;
                 palavra_valida = encontrou_palavra(matriz, palavra, linha, coluna, direcao, qtd_letras, inversao);
-                cout << "inversao: " << inversao << endl;
-                if (palavra_valida)
-                    cout << "\npalavra valida\n";
-                else
-                    cout << "\ninvalida\n";
+                if (!palavra_valida)
+                    cout << "\nPalavra Invalida\n";
 
                 if (palavra_valida) {
-                    encontradas++; //quantidade de palavras encontradas 
-                    cout << "encontradas: " << encontradas << endl;
+                    cout << "\nPalavra Valida\n";
+                    
+                    for (int i = 0; i < listas[pos_sorteada].tam; i++) {
+                        if (lista_auxiliar[i].palavra == palavra) {
+                            lista_auxiliar[i].esconder = true; //atualiza a variavel esconder
+                            break;
+                        }
+                    }
+                    encontradas++; //aumenta quantidade de palavras encontradas 
+                    
                     atualizar_matriz(matriz, linha, coluna, direcao, qtd_letras, inversao); //define as posições da matriz correspondentes a palavra como encontradas = true;
                 }
-                else if (encontradas == listas[pos_sorteada].tam) { //se a qtd de palavras encontradas for igual a qtd de palavras da lista, houve vitoria
-                    system("cls");
-                    cout << "\n\tParabens, voce conseguiu encontrar todas as palavras\n";
+                if (encontradas == listas[pos_sorteada].tam) { //se a qtd de palavras encontradas for igual a qtd de palavras da lista, houve vitoria
+                    set_color(10);
+                    cout << "\n\tParabens! Voce conseguiu encontrar todas as palavras\n\n";
+                    set_color(7);
                 }
                 system("pause");
-
             } while (encontradas != listas[pos_sorteada].tam || palavra == "fim");
-            system("pause");
-            system("cls");
+            
+            delete[]lista_auxiliar;
             break;
         }
     }
