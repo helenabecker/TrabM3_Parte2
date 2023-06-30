@@ -661,12 +661,17 @@ int main()
                 //verifica se a palavra encontrada esta dentro das posições indicadas na matriz
                 palavra_valida = false;
                 palavra_valida = encontrou_palavra(matriz, palavra, linha, coluna, direcao, qtd_letras, inversao);
-                if (!palavra_valida)
-                    cout << "\nPalavra Invalida\n";
-
+                
+                if (!palavra_valida) {
+                    set_color(12);
+                    cout << "\n\tPalavra Invalida\n\n";
+                    set_color(7);
+                }
                 if (palavra_valida) {
-                    cout << "\nPalavra Valida\n";
-                    
+                    set_color(2);
+                    cout << "\n\tPalavra Valida\n\n";
+                    set_color(7);
+
                     for (int i = 0; i < listas[pos_sorteada].tam; i++) {
                         if (lista_auxiliar[i].palavra == palavra) {
                             lista_auxiliar[i].esconder = true; //atualiza a variavel esconder
