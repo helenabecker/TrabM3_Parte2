@@ -95,7 +95,7 @@ int contar_linhas_arquivo() {
         arquivo.close();
         return contador;
     }
-    else return -1;
+    else return 0;
 }
 
 void escrever_nova_lista(Lista listas[], int tam) {
@@ -144,7 +144,8 @@ void escrever_no_arquivo(Lista listas[], string nome_arq, int tam) {
             }
         }
         arquivo.close();
-        cout << "\tArquivo salvo com sucesso!" << endl;
+        system("cls");
+        cout << "\n\tArquivo salvo com sucesso!\n" << endl;
     }
     else cout << "\nErro ao abrir o arquivo\n";
 }
@@ -602,6 +603,7 @@ int main()
             system("cls");
             if (cont_linhas == 0) {
                 cout << "\n\tNao existem listas registradas no momento, volte para o menu e escreva uma lista\n" << endl;
+                system("pause");
                 break;
             }
             alterar_lista(listas, tam);
