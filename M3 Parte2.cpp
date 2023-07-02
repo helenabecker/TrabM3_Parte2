@@ -11,11 +11,6 @@ using namespace std;
 #define tam_maximo 10
 #define tam_matriz 20
 
-struct ListaSorteada { //lista de palavras que aparece durante o jogo
-    string palavra;
-    bool esconder = false; //quando a palavra for encontrada, não aparecerá mais na tela
-};
-
 struct Lista {
     string palavras[tam_maximo];
     int tam = 0; //posições sendo utilizadas no vetor
@@ -25,6 +20,11 @@ struct Lista {
 struct Matriz {
     char letra; //letra de cada posição da matriz
     bool encontrada = false; //se a letra pertence a uma palavra encontrada ou não
+};
+
+struct ListaSorteada { //lista de palavras que aparece durante o jogo
+    string palavra;
+    bool esconder = false; //quando a palavra for encontrada, não aparecerá mais na tela
 };
 
 void set_color(int color) {
@@ -144,7 +144,7 @@ void escrever_no_arquivo(Lista listas[], string nome_arq, int tam) {
             }
         }
         arquivo.close();
-        cout << "Arquivo salvo com sucesso!" << endl;
+        cout << "\tArquivo salvo com sucesso!" << endl;
     }
     else cout << "\nErro ao abrir o arquivo\n";
 }
@@ -197,6 +197,7 @@ void alterar_lista(Lista listas[], int tam) {
         return; // volta ao menu
     }
     listas[escolha - 1].tam = opcao_invalida("\n\nInforme quantas palavras deseja escrever", 0, tam_maximo, true);
+    system("cls");
     escrever_nova_lista(listas, escolha);
 }
 
@@ -235,7 +236,7 @@ void mostrar_matriz(Matriz matriz[tam_matriz][tam_matriz], ListaSorteada lista_a
 
         for (int j = 0; j < tam_matriz; j++) {
             if (matriz[i][j].letra != '\0') {
-                if (matriz[i][j].encontrada == true) {
+                if (matriz[i][j].encontrada == true) { //se a letra pertencer a uma palavra encontrada fica colorida
                     set_color(13);
                     cout << "  " << matriz[i][j].letra << " ";
                     set_color(7);
@@ -259,7 +260,7 @@ void mostrar_matriz(Matriz matriz[tam_matriz][tam_matriz], ListaSorteada lista_a
                 cout << "\t   " << lista_auxiliar[i - 1].palavra;
         }
         else if (i == tam_lista + 2)
-            cout << "\t   Palavras encontradas: " << palavras_encontradas;
+            cout << "\t   Palavras encontradas: " << palavras_encontradas; //mostra qtd de palavras encontradas
         cout << endl;
     }
 }
@@ -533,7 +534,7 @@ int main()
     int escolha, tam = 1, pos_sorteada, linha = 0, coluna = 0, direcao = 0, encontradas = 0, inversao = 0, qtd_letras = 0;
     bool palavra_valida = false;
     Lista* listas = new Lista[tam];
-
+    
     int cont_linhas = contar_linhas_arquivo(); //contando linhas do arquivo csv
 
     if (cont_linhas > 1) //se tiver mais que uma linha no arquivo, aumenta o tamamho do vetor de listas
@@ -604,6 +605,7 @@ int main()
                 break;
             }
             alterar_lista(listas, tam);
+            system("pause");
             system("cls");
             break;
 
